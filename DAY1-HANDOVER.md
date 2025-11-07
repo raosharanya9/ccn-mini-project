@@ -1,5 +1,5 @@
 ﻿# DAY1 HANDOVER
-Owner: Member A — Ramesh Rao
+Owner: Member A — Sharanya Rao 
 Date: 2025-11-07
 
 What I completed:
@@ -8,7 +8,7 @@ What I completed:
 - templates/login.html present and app runs locally at http://127.0.0.1:5000
 
 How to run (exact):
-1. git clone <repo_url>
+1. git clone <git@github.com:raosharanya9/ccn-mini-project.git> 
 2. python -m venv venv
 3. .\venv\Scripts\activate
 4. pip install -r requirements.txt
@@ -27,4 +27,4 @@ Evidence included:
 - evidence/day1/login_success.png
 - evidence/day1/seed_db_output.png
 
-Contact: @RameshRao
+Contact: @SharanyaRao 
