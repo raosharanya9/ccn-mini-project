@@ -1,32 +1,38 @@
-from flask import Flask, render_template, request, redirect, url_for
-import sqlite3, hashlib, os
+# --- Day2 vulnerable login (use this exact block) ---
+import sqlite3
+from flask import Flask, request, render_template
 
 app = Flask(__name__)
-DB = os.path.join(os.path.dirname(__file__), "app.db")
 
-def check_login(username, password):
-    password_hash = hashlib.sha256(password.encode()).hexdigest()
-    conn = sqlite3.connect(DB)
-    c = conn.cursor()
-    c.execute("SELECT * FROM users WHERE username=? AND password_hash=?", (username, password_hash))
-    user = c.fetchone()
-    conn.close()
-    return user is not None
+def get_db():
+    conn = sqlite3.connect('app.db')
+    conn.row_factory = sqlite3.Row
+    return conn
 
-@app.route("/", methods=["GET", "POST"])
+@app.route('/login', methods=['GET','POST'])
 def login():
-    if request.method == "POST":
-        username = request.form["username"]
-        password = request.form["password"]
-        if check_login(username, password):
-            return redirect(url_for("dashboard"))
+    if request.method == 'POST':
+        u = request.form.get('username','')
+        p = request.form.get('password','')
+
+        # INTENTIONALLY VULNERABLE: uses actual DB column `password_hash`
+        query = f"SELECT * FROM users WHERE username = '{u}' AND password_hash = '{p}';"
+        print("EXECUTED QUERY:", query)   # copy this output as evidence
+
+        db = get_db()
+        cur = db.cursor()
+        try:
+            cur.execute(query)   # vulnerable to SQLi
+            user = cur.fetchone()
+        except Exception as e:
+            print("SQL ERROR:", e)
+            return "Server error", 500
+
+        if user:
+            return "Login success"
         else:
-            return render_template("login.html", error="Invalid username or password.")
-    return render_template("login.html")
+            return "Login failed", 401
 
-@app.route("/dashboard")
-def dashboard():
-    return "<h2>✅ Login successful! Welcome to your dashboard.</h2>"
+    return render_template('login.html')
+# --- end vulnerable login ---
 
-if __name__ == "__main__":
-    app.run(debug=True)
