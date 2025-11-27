@@ -2,24 +2,391 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Login - SQL Injection Demo</title>
     <style>
-        body { font-family: Arial, sans-serif; background: #f5f5f5; text-align: center; margin-top: 100px; }
-        form { background: white; padding: 20px; display: inline-block; border-radius: 8px; box-shadow: 0 0 10px #ccc; }
-        input { padding: 10px; margin: 5px; width: 200px; }
-        button { padding: 10px 20px; background: #4CAF50; color: white; border: none; border-radius: 5px; }
-        .error { color: red; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 450px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.25);
+            overflow: hidden;
+            animation: slideIn 0.6s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 45px 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+        }
+
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            left: -30%;
+            width: 150px;
+            height: 150px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+        }
+
+        .lock-icon {
+            font-size: 50px;
+            margin-bottom: 15px;
+            display: inline-block;
+            animation: bounce 2s infinite;
+            position: relative;
+            z-index: 1;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 5px;
+            font-weight: 700;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header p {
+            font-size: 15px;
+            opacity: 0.95;
+            font-weight: 300;
+            position: relative;
+            z-index: 1;
+        }
+
+        .form-container {
+            padding: 45px;
+        }
+
+        .form-group {
+            margin-bottom: 28px;
+        }
+
+        .form-group label {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            color: #333;
+            font-weight: 700;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        .form-group label span {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        .form-group label span:nth-child(1) {
+            background: #667eea;
+        }
+
+        .form-group label span:nth-child(2) {
+            background: #764ba2;
+            animation-delay: 0.2s;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 16px 18px;
+            border: 2px solid #e8e8f0;
+            border-radius: 12px;
+            font-size: 15px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: 'Segoe UI', sans-serif;
+            background: #f8f9ff;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.12);
+            transform: translateY(-2px);
+        }
+
+        .form-group input::placeholder {
+            color: #aaa;
+            font-weight: 500;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            box-shadow: 0 12px 30px rgba(102, 126, 234, 0.35);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 18px 45px rgba(102, 126, 234, 0.45);
+        }
+
+        .login-btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .login-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .security-info {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 20px;
+            padding: 12px;
+            background: #f0f4ff;
+            border-radius: 10px;
+            font-size: 13px;
+            color: #667eea;
+            font-weight: 600;
+            border: 1px solid #e0e8ff;
+        }
+
+        .security-info svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .footer-text {
+            text-align: center;
+            margin-top: 22px;
+            color: #999;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .footer-text strong {
+            color: #667eea;
+        }
+
+        .demo-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #fff3cd 0%, #fffbea 100%);
+            color: #856404;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 700;
+            margin-top: 18px;
+            width: 100%;
+            text-align: center;
+            border: 1px solid #ffeaa7;
+            letter-spacing: 0.5px;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .form-container {
+                padding: 30px 20px;
+            }
+
+            .header {
+                padding: 35px 20px;
+            }
+
+            .header h1 {
+                font-size: 28px;
+            }
+
+            .lock-icon {
+                font-size: 40px;
+            }
+
+            .form-group input {
+                padding: 14px 16px;
+                font-size: 14px;
+            }
+
+            .login-btn {
+                padding: 14px;
+                font-size: 15px;
+            }
+        }
     </style>
 </head>
 <body>
-    <h2>Login Page</h2>
-    <form method="post">
-        <input type="text" name="username" placeholder="Username" required><br>
-        <input type="password" name="password" placeholder="Password" required><br>
-        <button type="submit">Login</button>
-        {% if error %}
-            <p class="error">{{ error }}</p>
-        {% endif %}
-    </form>
+    <div class="container">
+        <div class="card">
+            <!-- Header Section -->
+            <div class="header">
+                <div class="lock-icon">🔐</div>
+                <h1>Secure Portal</h1>
+                <p>SQL Injection Security Assessment</p>
+            </div>
+
+            <!-- Form Section -->
+            <div class="form-container">
+                <form method="post" id="loginForm">
+                    <!-- Username Field -->
+                    <div class="form-group">
+                        <label for="username">
+                            <span></span>
+                            <span></span>
+                            Username
+                        </label>
+                        <input 
+                            type="text" 
+                            id="username"
+                            name="username" 
+                            placeholder="Enter your username" 
+                            required
+                            autocomplete="off"
+                        >
+                    </div>
+
+                    <!-- Password Field -->
+                    <div class="form-group">
+                        <label for="password">
+                            <span></span>
+                            <span></span>
+                            Password
+                        </label>
+                        <input 
+                            type="password" 
+                            id="password"
+                            name="password" 
+                            placeholder="Enter your password" 
+                            required
+                            autocomplete="off"
+                        >
+                    </div>
+
+                    <!-- Login Button -->
+                    <button type="submit" class="login-btn">
+                        ▶ Login Securely
+                    </button>
+
+                    <!-- Security Info -->
+                    <div class="security-info">
+                        ✓ End-to-end encrypted connection
+                    </div>
+
+                    <!-- Demo Badge -->
+                    <div class="demo-badge">
+                        ⚠️ Educational Demo - Test Credentials: admin / admin123
+                    </div>
+                </form>
+
+                <!-- Footer -->
+                <div class="footer-text">
+                    For demonstration purposes only
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simple form validation
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+
+            if (!username || !password) {
+                e.preventDefault();
+                alert('Please fill in all fields');
+                return false;
+            }
+        });
+
+        // Add focus animation
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.style.transform = 'scale(1.02)';
+            });
+            input.addEventListener('blur', function() {
+                this.parentElement.style.transform = 'scale(1)';
+            });
+        });
+    </script>
 </body>
 </html>
