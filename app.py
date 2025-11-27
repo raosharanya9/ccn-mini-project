@@ -1,8 +1,12 @@
 # --- Day2 vulnerable login (use this exact block) ---
 import sqlite3
+import hashlib
 from flask import Flask, request, render_template
 
 app = Flask(__name__)
+
+def hash_pw(p: str) -> str:
+    return hashlib.sha256(p.encode()).hexdigest()
 
 def get_db():
     conn = sqlite3.connect('app.db')
@@ -14,9 +18,12 @@ def login():
     if request.method == 'POST':
         u = request.form.get('username','')
         p = request.form.get('password','')
+        
+        # Hash the password for DB comparison
+        p_hash = hash_pw(p)
 
-        # INTENTIONALLY VULNERABLE: uses actual DB column `password_hash`
-        query = f"SELECT * FROM users WHERE username = '{u}' AND password_hash = '{p}';"
+        # INTENTIONALLY VULNERABLE: uses string concat (vulnerable to SQLi)
+        query = f"SELECT * FROM users WHERE username = '{u}' AND password_hash = '{p_hash}';"
         print("EXECUTED QUERY:", query)   # copy this output as evidence
 
         db = get_db()
@@ -36,3 +43,11 @@ def login():
     return render_template('login.html')
 # --- end vulnerable login ---
 
+if __name__ == '__main__':
+    print("\n" + "="*50)
+    print(" VULNERABLE APP STARTING...")
+    print("="*50)
+    print(" Server running at: http://127.0.0.1:5000")
+    print("Press Ctrl+C to stop")
+    print("="*50 + "\n")
+    app.run(host='127.0.0.1', port=5000, debug=True)
