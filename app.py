@@ -35,4 +35,12 @@ def login():
 
     return render_template('login.html')
 # --- end vulnerable login ---
+if __name__ == '__main__':
+    print("\n" + "="*50)
+    print("🚀 FLASK APP STARTING...")
+    print("="*50)
+    print("📍 Server running at: http://127.0.0.1:5000")
+    print("Press Ctrl+C to stop")
+    print("="*50 + "\n")
+    app.run(host='127.0.0.1', port=5000, debug=True)
 
